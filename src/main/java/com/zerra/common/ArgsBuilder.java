@@ -34,7 +34,6 @@ public class ArgsBuilder {
 	 *            the args given by the runtime environment
 	 * @return an new instance of the {@link ArgsBuilder} which contains the values of the parsed args
 	 */
-	@SuppressWarnings("unused")
 	public static ArgsBuilder deserialize(String[] args) {
 		// check if zerra is in a development environment
 		if (Launch.IS_DEVELOPMENT_BUILD) {
