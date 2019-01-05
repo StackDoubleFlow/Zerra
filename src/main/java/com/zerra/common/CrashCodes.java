@@ -9,4 +9,6 @@ public class CrashCodes {
     public static int INVALID_ARGUMENTS = - 2;
 
     public static int IO_EXCEPTION = - 3;
+
+    public static int INVALID_USER = -88;
 }

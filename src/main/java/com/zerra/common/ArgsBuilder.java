@@ -21,14 +21,12 @@ public class ArgsBuilder {
 
 	private final boolean isServer;
 	private final boolean isClient;
-	private final String id;
-	private final String workingDir;
+	private final AccountProcessor accountProcessor;
 
-	public ArgsBuilder(boolean isServer, String id, String workingDir) {
+	public ArgsBuilder(boolean isServer, AccountProcessor accountProcessor) {
 		this.isServer = isServer;
 		this.isClient = !isServer;
-		this.id = id;
-		this.workingDir = workingDir;
+		this.accountProcessor = accountProcessor;
 	}
 
 	/**
@@ -36,6 +34,7 @@ public class ArgsBuilder {
 	 *            the args given by the runtime environment
 	 * @return an new instance of the {@link ArgsBuilder} which contains the values of the parsed args
 	 */
+	@SuppressWarnings("unused")
 	public static ArgsBuilder deserialize(String[] args) {
 		// check if zerra is in a development environment
 		if (Launch.IS_DEVELOPMENT_BUILD) {
@@ -45,16 +44,18 @@ public class ArgsBuilder {
 		// checks if there are enough args, unless in development build, it'll exit with a negative exit code
 		if (args.length == 0) {
 			if (Launch.IS_DEVELOPMENT_BUILD) {
-				IOManager.init(new File("data"));
-				return new ArgsBuilder(false, "player", "null");
+				IOManager.init(new File("data\\"));
+				return new ArgsBuilder(false, new AccountProcessor("null"));
 			} else {
 				LAUNCH.fatal("Missing required parameters");
 				System.exit(CrashCodes.INVALID_ARGUMENTS);
 			}
 		}
+
 		// default assignments
 		boolean isServer = false;
-		String id = null, workingDir = null;
+        AccountProcessor accountProcessor = null;
+
 		Iterator<String> iterator = Arrays.asList(args).iterator();
 
 		// iterating trough strings as args; to add args: just add another case statement to the switch.
@@ -67,14 +68,18 @@ public class ArgsBuilder {
 				isServer = true;
 				break;
 			case "--client":
-				isServer = false;
+
 				break;
 			case "--id":
 				if(!iterator.hasNext()) {
-					throw new IllegalArgumentException("after --id a directory should be specified");
+					throw new IllegalArgumentException("after --id an id should be specified");
 				}
-				//AccountProcessor proc = new AccountProcessor(iterator.next());
-				//proc.process();
+				String id = iterator.next();
+                if (id.startsWith("--")) {
+                    throw new IllegalArgumentException("after --id an id should be specified");
+                }
+                accountProcessor = new AccountProcessor(id);
+				accountProcessor.process();
 				break;
 			case "--dir":
 				if (!iterator.hasNext()) {
@@ -86,21 +91,27 @@ public class ArgsBuilder {
 				}
 				File dataDirectory = new File(path);
 				if (!dataDirectory.isDirectory()) {
-					throw new IllegalArgumentException("path (" + path + ") is not a directory!");
+					throw new IllegalArgumentException("after --dir a directory should be specified");
 				}
 				if(!dataDirectory.exists()){
-					throw new IllegalArgumentException("directory specified (" + path + ") does not exist!");
+					throw new IllegalArgumentException("after --dir an existing directory should be specified");
 				}
 				IOManager.init(dataDirectory);
-				//instead of saving it, we preinit the io manager before we start zerra
+				//instead of saving it, we initialize the io manager before we start zerra
 				break;
 			default:
 				break;
 			}
 		}
-
-		// test if all args are set, if not, assigning the data but nly if IS_DEVELOPMENT_BUILD is true
-		return new ArgsBuilder(isServer, id, workingDir);
+        if(accountProcessor == null){
+            if (Launch.IS_DEVELOPMENT_BUILD) {
+                accountProcessor = new AccountProcessor("null");
+            } else {
+                LAUNCH.fatal("Missing required parameters");
+                System.exit(CrashCodes.INVALID_ARGUMENTS);
+            }
+        }
+		return new ArgsBuilder(isServer, accountProcessor);
 	}
 
 	public boolean isClient() {
@@ -111,11 +122,5 @@ public class ArgsBuilder {
 		return isServer;
 	}
 
-	public String getId() {
-		return id;
-	}
 
-	public String getWorkingDirectory() {
-		return workingDir;
-	}
 }
