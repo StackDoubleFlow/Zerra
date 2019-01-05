@@ -86,10 +86,10 @@ public class ArgsBuilder {
 				}
 				File dataDirectory = new File(path);
 				if (!dataDirectory.isDirectory()) {
-					throw new IllegalArgumentException("path specified is not a directory!");
+					throw new IllegalArgumentException("path (" + path + ") is not a directory!");
 				}
 				if(!dataDirectory.exists()){
-					throw new IllegalArgumentException("directory specified does not exist!");
+					throw new IllegalArgumentException("directory specified (" + path + ") does not exist!");
 				}
 				IOManager.init(dataDirectory);
 				//instead of saving it, we preinit the io manager before we start zerra
