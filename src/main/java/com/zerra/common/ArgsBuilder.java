@@ -73,8 +73,8 @@ public class ArgsBuilder {
 				if(!iterator.hasNext()) {
 					throw new IllegalArgumentException("after --id a directory should be specified");
 				}
-				AccountProcessor proc = new AccountProcessor(iterator.next());
-				proc.process();
+				//AccountProcessor proc = new AccountProcessor(iterator.next());
+				//proc.process();
 				break;
 			case "--dir":
 				if (!iterator.hasNext()) {
