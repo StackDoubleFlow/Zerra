@@ -65,6 +65,12 @@ public class Loader {
 		}
 	}
 
+	/**
+	 * Deletes all of the vertex arrays supplied from memory.
+	 * 
+	 * @param ids
+	 *            The ids to delete
+	 */
 	public static void deleteVertexArrays(int... ids) {
 		GL30.glDeleteVertexArrays(ids);
 		for (Integer vao : ids) {
@@ -72,6 +78,12 @@ public class Loader {
 		}
 	}
 
+	/**
+	 * Deletes all of the vertex buffers supplied from memory.
+	 * 
+	 * @param ids
+	 *            The ids to delete
+	 */
 	public static void deleteBuffers(int... ids) {
 		GL15.glDeleteBuffers(ids);
 		for (Integer vbo : ids) {
@@ -79,6 +91,12 @@ public class Loader {
 		}
 	}
 
+	/**
+	 * Deletes all of the textures supplied from memory.
+	 * 
+	 * @param ids
+	 *            The ids to delete
+	 */
 	public static void deleteTextures(int... ids) {
 		GL11.glDeleteTextures(ids);
 		for (Integer texture : ids) {
