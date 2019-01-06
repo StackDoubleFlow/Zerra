@@ -24,21 +24,17 @@ public class TileMeshCreator {
 	private Map<Plate, PlateMeshData> generatedPlates;
 	private Map<Plate, Model> platesMesh;
 	private List<Plate> requestedPlates;
-	
+
 	private Map<Tile, ResourceLocation> textureCache;
 	private PlateMeshData meshCache;
-	
-	private Map<Plate, PlateMeshData> map;
 
 	public TileMeshCreator() {
 		this.generatedPlates = new ConcurrentHashMap<Plate, PlateMeshData>();
 		this.platesMesh = new ConcurrentHashMap<Plate, Model>();
 		this.requestedPlates = new ArrayList<Plate>();
-		
+
 		this.textureCache = new HashMap<Tile, ResourceLocation>();
 		meshCache = new PlateMeshData(null, null);
-		
-		map = new ConcurrentHashMap<Plate, PlateMeshData>(this.generatedPlates);
 	}
 
 	// TODO use indices where possible perhaps
@@ -89,24 +85,20 @@ public class TileMeshCreator {
 
 		meshCache.setPositions(vertices);
 		meshCache.setTextureCoords(textureCoords);
-		
+
 		this.generatedPlates.put(plate, meshCache);
-		
+
 		textureCache.clear();
 	}
 
 	public void prepare() {
-		if (this.generatedPlates.size() > 0) {
-			map.clear();
-			map.putAll(this.generatedPlates);
-			for (Plate plate : map.keySet()) {
-				PlateMeshData data = map.get(plate);
-				if (plate.isLoaded()) {
-					this.platesMesh.put(plate, Loader.loadToVAO(data.getPositions(), data.getTextureCoords(), 2));
-				}
-				this.requestedPlates.remove(plate);
-				this.generatedPlates.remove(plate);
+		for (Plate plate : this.generatedPlates.keySet()) {
+			PlateMeshData data = this.generatedPlates.get(plate);
+			if (plate.isLoaded()) {
+				this.platesMesh.put(plate, Loader.loadToVAO(data.getPositions(), data.getTextureCoords(), 2));
 			}
+			this.requestedPlates.remove(plate);
+			this.generatedPlates.remove(plate);
 		}
 	}
 
@@ -152,7 +144,7 @@ public class TileMeshCreator {
 		public float[] getTextureCoords() {
 			return textureCoords;
 		}
-		
+
 		public void setPositions(float[] positions) {
 			this.positions = positions;
 		}
