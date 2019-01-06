@@ -32,7 +32,8 @@ public class TileMeshCreator {
 	}
 
 	// TODO use indices where possible perhaps
-	private void generatePlateMesh(Plate plate, int index) {
+	@Deprecated
+	private void generate2DPlateMesh(Plate plate, int index) {
 		int size = Plate.SIZE + 1;
 		float[] vertices = new float[size * size * 12];
 		float[] textureCoords = new float[size * size * 12];
@@ -114,7 +115,7 @@ public class TileMeshCreator {
 			}
 			if (!this.requestedPlates.contains(plate)) {
 				this.requestedPlates.add(plate);
-				Zerra.getInstance().schedule(() -> this.generatePlateMesh(plate, this.requestedPlates.size() - 1));
+				Zerra.getInstance().schedule(() -> this.generate2DPlateMesh(plate, this.requestedPlates.size() - 1));
 			}
 		}
 		return false;
