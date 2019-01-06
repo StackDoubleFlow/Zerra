@@ -46,6 +46,8 @@ public class InputHandler {
 	 * @return Whether or not that key was pressed
 	 */
 	public boolean isKeyPressed(int keyCode) {
+		if(keyCode < 0 || keyCode >= this.keys.length)
+			return false;
 		return this.keys[keyCode] == 1;
 	}
 
@@ -57,6 +59,8 @@ public class InputHandler {
 	 * @return Whether or not that button is pressed
 	 */
 	public boolean isMouseButtonPressed(int mouseButton) {
+		if(mouseButton < 0 || mouseButton >= this.mouseButtons.length)
+			return false;
 		return this.mouseButtons[mouseButton] == 1;
 	}
 
@@ -69,6 +73,8 @@ public class InputHandler {
 	 *            Whether or not the key should be pressed
 	 */
 	public void setKeyPressed(int keyCode, boolean pressed) {
+		if(keyCode < 0 || keyCode >= this.keys.length)
+			return;
 		this.keys[keyCode] = (byte) (pressed ? 1 : 0);
 	}
 
@@ -81,6 +87,8 @@ public class InputHandler {
 	 *            Whether or not the button should be pressed
 	 */
 	public void setMouseButtonPressed(int mouseButton, boolean pressed) {
+		if(mouseButton < 0 || mouseButton >= this.mouseButtons.length)
+			return;
 		this.mouseButtons[mouseButton] = (byte) (pressed ? 1 : 0);
 	}
 

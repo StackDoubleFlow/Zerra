@@ -5,9 +5,9 @@ import com.zerra.common.world.entity.attrib.LivingAttributes;
 
 public class EntityLivingBase extends EntityBase
 {
-	private World				world;
+	private World world;
 
-	private LivingAttributes	attributes;
+	private LivingAttributes attributes;
 
 	public EntityLivingBase(World world)
 	{

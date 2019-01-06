@@ -8,11 +8,11 @@ package com.zerra.common.world.entity.attrib;
 public class LivingAttributes
 {
 
-	private Attribute	HEALTH		= Attribute.HEALTH;
-	private Attribute	STAMINA		= Attribute.STAMINA;
-	private Attribute	MANA		= Attribute.MANA;
-	private Attribute	PHYS_ARMOR	= Attribute.PHYS_ARMOR;
-	private Attribute	SPELL_ARMOR	= Attribute.SPELL_ARMOR;
+	private Attribute HEALTH = Attribute.HEALTH;
+	private Attribute STAMINA = Attribute.STAMINA;
+	private Attribute MANA = Attribute.MANA;
+	private Attribute PHYS_ARMOR = Attribute.PHYS_ARMOR;
+	private Attribute SPELL_ARMOR = Attribute.SPELL_ARMOR;
 
 	public Attribute getHealth()
 	{

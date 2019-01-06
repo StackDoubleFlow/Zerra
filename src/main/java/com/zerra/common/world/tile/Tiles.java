@@ -10,10 +10,10 @@ public class Tiles {
 
 	private static final Map<ResourceLocation, Tile> TILES = Maps.<ResourceLocation, Tile>newHashMap();
 
-	public static final Tile STONE = new TileGround(DefaultTileTypes.STONE, 0x9a8a71, new ResourceLocation("textures/stone.png"), "stone");
-	public static final Tile GRASS = new TileGround(DefaultTileTypes.GRASS, 0x577240, new ResourceLocation("textures/grass.png"), "grass");
-	public static final Tile SAND = new TileGround(DefaultTileTypes.SAND, 0xf9d699, new ResourceLocation("textures/sand.png"), "sand");
-	public static final Tile COBBLESTONE = new TileGround(DefaultTileTypes.STONE, 0x9a8a71, new ResourceLocation("textures/cobblestone.png"), "cobblestone");
+	public static final Tile STONE = new TileGround(ZerraTileTypes.STONE, 0x9a8a71, new ResourceLocation("textures/stone.png"), "stone");
+	public static final Tile GRASS = new TileGround(ZerraTileTypes.GRASS, 0x577240, new ResourceLocation("textures/grass.png"), "grass");
+	public static final Tile SAND = new TileGround(ZerraTileTypes.SAND, 0xf9d699, new ResourceLocation("textures/sand.png"), "sand");
+	public static final Tile COBBLESTONE = new TileGround(ZerraTileTypes.STONE, 0x9a8a71, new ResourceLocation("textures/cobblestone.png"), "cobblestone");
 
 	public static void registerTiles() {
 		register(STONE);

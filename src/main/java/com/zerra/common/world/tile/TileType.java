@@ -15,7 +15,7 @@ public class TileType {
 
     /**
      * Constructs an tileType
-     * @see DefaultTileTypes
+     * @see ZerraTileTypes
      *
      * @param typeName unique identifier in text for this type
      * @param hardness the hardness of the tile (how long it takes to be broken) unless specified by

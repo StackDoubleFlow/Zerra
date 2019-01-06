@@ -32,7 +32,7 @@ public class Display {
 	private static int width;
 	private static int height;
 	private static boolean fullscreen;
-	
+
 	protected static byte[] joysticksPresent;
 
 	private static DoubleBuffer mouseXBuffer = BufferUtils.createDoubleBuffer(1);
@@ -115,6 +115,7 @@ public class Display {
 		GLFW.glfwSetWindowPos(windowID, (int) ((vidMode.width() * 0.5) - (width * 0.5)), (int) ((vidMode.height() * 0.5) - (height * 0.5)));
 
 		GLFW.glfwMakeContextCurrent(windowID);
+		GLFW.glfwSwapInterval(1);
 		GL.createCapabilities();
 	}
 

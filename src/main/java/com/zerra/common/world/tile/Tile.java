@@ -9,7 +9,7 @@ import com.zerra.common.world.storage.Layer;
 
 public abstract class Tile {
 
-	public static final Tile NONE = new Tile(DefaultTileTypes.AIR) {
+	public static final Tile NONE = new Tile(ZerraTileTypes.AIR) {
 
 		@Override
 		public ResourceLocation getRegistryID() {

@@ -26,7 +26,7 @@ public enum Attribute
 
 	public int getMinValue()
 	{
-		return minValue;
+		return this.minValue;
 	}
 
 	public void setMinValue(int minValue)
@@ -46,7 +46,7 @@ public enum Attribute
 
 	public int getMaxValue()
 	{
-		return maxValue;
+		return this.maxValue;
 	}
 
 	public void setMaxValue(int maxValue)
