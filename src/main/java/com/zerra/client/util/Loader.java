@@ -65,6 +65,27 @@ public class Loader {
 		}
 	}
 
+	public static void deleteVertexArrays(int... ids) {
+		GL30.glDeleteVertexArrays(ids);
+		for (Integer vao : ids) {
+			vaos.remove(vao);
+		}
+	}
+
+	public static void deleteBuffers(int... ids) {
+		GL15.glDeleteBuffers(ids);
+		for (Integer vbo : ids) {
+			vbos.remove(vbo);
+		}
+	}
+
+	public static void deleteTextures(int... ids) {
+		GL11.glDeleteTextures(ids);
+		for (Integer texture : ids) {
+			textures.remove(texture);
+		}
+	}
+
 	/**
 	 * Loads an image to a byte buffer. Used when loading textures.
 	 * 

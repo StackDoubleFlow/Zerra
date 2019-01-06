@@ -1,6 +1,6 @@
 package com.zerra.client.gfx.texture;
 
-import org.lwjgl.opengl.GL11;
+import com.zerra.client.util.Loader;
 
 public class BasicTexture implements ITexture {
 
@@ -17,7 +17,7 @@ public class BasicTexture implements ITexture {
 	@Override
 	public void delete() {
 		if (this.textureId != -1) {
-			GL11.glDeleteTextures(this.textureId);
+			Loader.deleteTextures(this.textureId);
 			this.textureId = -1;
 		}
 	}

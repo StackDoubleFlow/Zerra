@@ -1,8 +1,7 @@
 package com.zerra.client.gfx.texture.cubemap;
 
-import org.lwjgl.opengl.GL11;
-
 import com.zerra.client.gfx.texture.ITexture;
+import com.zerra.client.util.Loader;
 
 public class CubemapTexture implements ITexture {
 
@@ -15,7 +14,7 @@ public class CubemapTexture implements ITexture {
 	@Override
 	public void delete() {
 		if (this.textureId != -1) {
-			GL11.glDeleteTextures(this.textureId);
+			Loader.deleteTextures(this.textureId);
 			this.textureId = -1;
 		}
 	}

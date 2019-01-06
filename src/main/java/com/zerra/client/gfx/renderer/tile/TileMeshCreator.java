@@ -9,7 +9,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import javax.annotation.Nullable;
 
 import org.joml.Vector2i;
-import org.lwjgl.opengl.GL30;
 
 import com.zerra.client.Zerra;
 import com.zerra.client.gfx.model.Model;
@@ -109,7 +108,7 @@ public class TileMeshCreator {
 	public boolean ready(Plate plate) {
 		if (!plate.isLoaded()) {
 			if (this.platesMesh.containsKey(plate)) {
-				GL30.glDeleteVertexArrays(this.platesMesh.remove(plate).getVaoID());
+				Loader.deleteVertexArrays(this.platesMesh.remove(plate).getVaoID());
 			}
 		} else {
 			if (this.platesMesh.containsKey(plate)) {

@@ -47,7 +47,7 @@ public class TextureMap implements ITexture {
 	@Override
 	public void delete() {
 		if (this.textureId != -1) {
-			GL11.glDeleteTextures(this.textureId);
+			Loader.deleteTextures(this.textureId);
 			this.textureId = -1;
 		}
 	}
