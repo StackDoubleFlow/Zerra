@@ -1,6 +1,6 @@
 package com.zerra.common.world.entity.facing;
 
-public enum EntityFacing
+public enum Direction
 {
 	NORTH,
 	SOUTH,

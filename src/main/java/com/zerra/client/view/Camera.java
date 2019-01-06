@@ -7,6 +7,7 @@ import org.joml.Vector3f;
 import org.joml.Vector3i;
 import org.lwjgl.glfw.GLFW;
 
+import com.zerra.Launch;
 import com.zerra.client.Zerra;
 import com.zerra.client.input.InputHandler;
 import com.zerra.client.input.gamepad.Gamepad;
@@ -35,6 +36,8 @@ public class Camera implements ICamera {
 	private Vector3f renderRotation;
 	private Vector3f lastRotation;
 	private Vector3f rotation;
+	
+	private float speedAdjust = 0f;
 
 	public Camera() {
 		this.lastPlatePosition = new Vector3i();
@@ -65,17 +68,28 @@ public class Camera implements ICamera {
 			}
 		} else {
 			if (inputHandler.isKeyPressed(GLFW.GLFW_KEY_W)) {
-				this.position.y--;
+				this.position.y -= 1 + this.speedAdjust;
 			}
 			if (inputHandler.isKeyPressed(GLFW.GLFW_KEY_S)) {
-				this.position.y++;
+				this.position.y += 1 + this.speedAdjust;
 			}
 			if (inputHandler.isKeyPressed(GLFW.GLFW_KEY_A)) {
-				this.position.x--;
+				this.position.x -= 1 + this.speedAdjust;
 			}
 			if (inputHandler.isKeyPressed(GLFW.GLFW_KEY_D)) {
-				this.position.x++;
+				this.position.x += 1 + this.speedAdjust;
 			}
+			
+			// Useful keys to adjust the movement speed of the camera when not locked to the player.
+			if(Launch.IS_DEVELOPMENT_BUILD) {
+				if (inputHandler.isKeyPressed(GLFW.GLFW_KEY_EQUAL)) {
+					this.speedAdjust += (this.speedAdjust < 10) ? 0.07f : 0.0f;
+				}
+				if (inputHandler.isKeyPressed(GLFW.GLFW_KEY_MINUS)) {
+					this.speedAdjust -= (this.speedAdjust > -0.75f) ? 0.07f : 0.0f;
+				}
+			}
+			
 		}
 
 		this.platePosition.set((int) (this.position.x / (float) (Plate.SIZE + 1)), (int) this.position.z, (int) (this.position.y / (float) (Plate.SIZE + 1)));

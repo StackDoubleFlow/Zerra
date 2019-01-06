@@ -3,7 +3,7 @@ package com.zerra.common.world.entity;
 import org.joml.Vector3f;
 import org.joml.Vector3i;
 
-import com.zerra.common.world.entity.facing.EntityFacing;
+import com.zerra.common.world.entity.facing.Direction;
 
 public interface Entity
 {
@@ -65,5 +65,5 @@ public interface Entity
 	/**
 	 * All entities should have a facing direction.
 	 */
-	public EntityFacing getFacingDirection();
+	public Direction getFacingDirection();
 }

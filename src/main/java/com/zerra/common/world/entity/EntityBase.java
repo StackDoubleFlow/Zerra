@@ -5,7 +5,7 @@ import org.joml.Vector3f;
 import org.joml.Vector3i;
 
 import com.zerra.common.world.World;
-import com.zerra.common.world.entity.facing.EntityFacing;
+import com.zerra.common.world.entity.facing.Direction;
 
 public abstract class EntityBase implements Entity
 {
@@ -21,7 +21,7 @@ public abstract class EntityBase implements Entity
 	// Used in determining starting point of collision box sizing.
 	private float			anchorPoint		= 0f;
 
-	private EntityFacing	direction;
+	private Direction	direction;
 
 	public EntityBase(World world)
 	{
@@ -33,14 +33,14 @@ public abstract class EntityBase implements Entity
 		tilePosition.set(Math.round(entityPosition.x()), Math.round(entityPosition.z()), Math.round(entityPosition.z()));
 
 		// Set direction.
-		direction = EntityFacing.SOUTH;
+		direction = Direction.SOUTH;
 
 		// Set velocity.
 		velocity.set(0f, 0f, 0f);
 	}
 
 	@Override
-	public EntityFacing getFacingDirection()
+	public Direction getFacingDirection()
 	{
 		return direction;
 	}

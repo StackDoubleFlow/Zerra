@@ -1,4 +1,4 @@
-package com.zerra.common.registy;
+package com.zerra.common.registry;
 
 import java.util.List;
 

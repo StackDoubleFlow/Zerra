@@ -1,4 +1,4 @@
-package com.zerra.common.registy;
+package com.zerra.common.registry;
 
 public interface IEntryHolder<T> {
 
