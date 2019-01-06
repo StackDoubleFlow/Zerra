@@ -34,10 +34,11 @@ public class TileMeshCreator {
 		this.requestedPlates = new ArrayList<Plate>();
 
 		this.textureCache = new HashMap<Tile, ResourceLocation>();
-		meshCache = new PlateMeshData(null, null);
+		this.meshCache = new PlateMeshData(null, null);
 	}
 
 	// TODO use indices where possible perhaps
+	// Unused in newer versions
 	@Deprecated
 	private void generate2DPlateMesh(Plate plate, int index) {
 		int size = Plate.SIZE + 1;
@@ -50,10 +51,10 @@ public class TileMeshCreator {
 			for (int z = 0; z < size; z++) {
 				Vector2i pos = new Vector2i(x, z);
 				Tile tile = plate.getTileAt(pos);
-				if (!textureCache.containsKey(tile)) {
-					textureCache.put(tile, tile.getTexture());
+				if (!this.textureCache.containsKey(tile)) {
+					this.textureCache.put(tile, tile.getTexture());
 				}
-				TextureMapSprite sprite = Zerra.getInstance().getTextureMap().getSprite(textureCache.get(tile));
+				TextureMapSprite sprite = Zerra.getInstance().getTextureMap().getSprite(this.textureCache.get(tile));
 				vertices[vertexPointer * 12] = x;
 				vertices[vertexPointer * 12 + 1] = z;
 				vertices[vertexPointer * 12 + 2] = x;
@@ -83,12 +84,10 @@ public class TileMeshCreator {
 		}
 		Zerra.logger().info("Generated " + Plate.SIZE + "x" + Plate.SIZE + " mesh in " + (System.currentTimeMillis() - lastTime) / 1000.0 + " seconds");
 
-		meshCache.setPositions(vertices);
-		meshCache.setTextureCoords(textureCoords);
-
+		this.meshCache.setPositions(vertices);
+		this.meshCache.setTextureCoords(textureCoords);
 		this.generatedPlates.put(plate, meshCache);
-
-		textureCache.clear();
+		this.textureCache.clear();
 	}
 
 	public void prepare() {
