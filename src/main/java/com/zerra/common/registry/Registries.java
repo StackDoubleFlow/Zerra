@@ -38,6 +38,12 @@ public class Registries {
 			}
 			return entries;
 		}
+
+		@Override
+		public void addEntry(IEntryHolder<Tile> entry)
+		{
+			entryHolders.add(entry);
+		}
 	}
 
 	private static class Items implements IRegistry<Item> {
@@ -56,6 +62,12 @@ public class Registries {
 				entries.addAll(Arrays.asList(entryHolder.getEntries()));
 			}
 			return entries;
+		}
+
+		@Override
+		public void addEntry(IEntryHolder<Item> entry)
+		{
+			entryHolders.add(entry);
 		}
 	}
 }
