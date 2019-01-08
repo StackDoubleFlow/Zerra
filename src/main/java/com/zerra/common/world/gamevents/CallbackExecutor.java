@@ -2,7 +2,7 @@ package com.zerra.common.world.gamevents;
 
 import java.util.function.Consumer;
 
-public class CallbackExecutor extends EventExecutor {
+class CallbackExecutor extends EventExecutor {
 
 	private final Consumer<Event> callback;
 	

@@ -1,5 +1,5 @@
 package com.zerra.common.world.gamevents;
 
-public abstract class EventExecutor {
-	public abstract void execute(Event event);
+abstract class EventExecutor {
+	abstract void execute(Event event);
 }
