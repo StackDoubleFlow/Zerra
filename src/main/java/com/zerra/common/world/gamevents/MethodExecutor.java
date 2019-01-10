@@ -12,7 +12,7 @@ class MethodExecutor extends EventExecutor {
 		this.method = method;
 	}
 
-	public void execute(Event event) {
+	public void execute(EventBase event) {
 		try {
 			method.invoke(listener, event);
 		} catch (Throwable throwable) {

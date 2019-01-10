@@ -6,7 +6,7 @@ import com.zerra.common.world.entity.attrib.LivingAttributes;
 public class EntityLivingBase extends EntityBase
 {
 	private World world;
-
+	private String entityName = "N/A";
 	private LivingAttributes attributes;
 
 	public EntityLivingBase(World world)
@@ -24,5 +24,10 @@ public class EntityLivingBase extends EntityBase
 	public LivingAttributes getSharedAttributes()
 	{
 		return attributes;
+	}
+	
+	public String getEntityName() 
+	{
+		return entityName;
 	}
 }

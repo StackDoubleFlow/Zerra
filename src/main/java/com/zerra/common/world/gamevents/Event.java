@@ -1,29 +1,12 @@
 package com.zerra.common.world.gamevents;
 
-import com.zerra.client.Zerra;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
-public class Event {
+@Target(ElementType.METHOD)
+@Retention(RetentionPolicy.RUNTIME)
+public @interface Event {
 
-	private boolean consumed;
-	private boolean cancelled;
-
-	public void call() {
-		Zerra.getInstance().getEventHandler().callEvent(this);
-	}
-
-	public void consume() {
-		this.consumed = true;
-	}
-
-	public boolean isConsumed() {
-		return this.consumed;
-	}
-
-	public void cancel() {
-		this.cancelled = true;
-	}
-
-	public boolean isCancelled() {
-		return cancelled;
-	}
 }

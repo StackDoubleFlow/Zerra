@@ -8,7 +8,7 @@ import java.util.function.Consumer;
 
 public class EventHandler {
 
-	private final ConcurrentHashMap<Class<? extends Event>, HashSet<EventExecutor>> eventExecutors;
+	private final ConcurrentHashMap<Class<? extends EventBase>, HashSet<EventExecutor>> eventExecutors;
 
 	public EventHandler() {
 		this.eventExecutors = new ConcurrentHashMap<>();
@@ -18,20 +18,20 @@ public class EventHandler {
 		for (Method method : listener.getClass().getMethods()) {
 			if (method.getParameterTypes().length != 1)
 				continue;
-			if (!method.isAnnotationPresent(EventMethod.class))
+			if (!method.isAnnotationPresent(Event.class))
 				continue;
 			method.setAccessible(true);
 			@SuppressWarnings("unchecked")
-			Class<? extends Event> eventClazz = (Class<? extends Event>) method.getParameterTypes()[0];
+			Class<? extends EventBase> eventClazz = (Class<? extends EventBase>) method.getParameterTypes()[0];
 			HashSet<EventExecutor> methodSet = eventExecutors.getOrDefault(eventClazz, new HashSet<>());
 			methodSet.add(new MethodExecutor(listener, method));
 			eventExecutors.put(eventClazz, methodSet);
 		}
 	}
 	
-	public <T extends Event> void registerCallback(Class<? extends T> eventClass, Consumer<T> callback) {
+	public <T extends EventBase> void registerCallback(Class<? extends T> eventClass, Consumer<T> callback) {
 		@SuppressWarnings("unchecked")
-		CallbackExecutor executor = new CallbackExecutor((Consumer<Event>) callback);
+		CallbackExecutor executor = new CallbackExecutor((Consumer<EventBase>) callback);
 		HashSet<EventExecutor> methodSet = eventExecutors.getOrDefault(eventClass, new HashSet<>());
 		methodSet.add(executor);
 		eventExecutors.put(eventClass, methodSet);
@@ -47,8 +47,8 @@ public class EventHandler {
 		}
 	}
 
-	public void callEvent(Event event) {
-		for (Entry<Class<? extends Event>, HashSet<EventExecutor>> entry : eventExecutors.entrySet()) {
+	public void callEvent(EventBase event) {
+		for (Entry<Class<? extends EventBase>, HashSet<EventExecutor>> entry : eventExecutors.entrySet()) {
 			if (entry.getKey().isInstance(event)) {
 				for (EventExecutor executor : entry.getValue()) {
 					if (event.isCancelled())

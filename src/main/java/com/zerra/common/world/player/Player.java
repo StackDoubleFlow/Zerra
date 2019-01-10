@@ -10,5 +10,9 @@ public class Player extends EntityLivingBase
 	{
 		super(world);
 	}
-
+	
+	public String getPlayerName()
+	{
+		return super.getEntityName();
+	}
 }

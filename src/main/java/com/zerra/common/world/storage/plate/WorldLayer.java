@@ -7,8 +7,11 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.joml.Vector3i;
 
+import com.zerra.client.Zerra;
 import com.zerra.common.world.World;
 import com.zerra.common.world.entity.Entity;
+import com.zerra.common.world.gamevents.events.client.PlateLoadEvent;
+import com.zerra.common.world.gamevents.listeners.PlateLoadEventListener;
 import com.zerra.common.world.storage.Layer;
 import com.zerra.common.world.tile.Tiles;
 
@@ -36,6 +39,10 @@ public class WorldLayer implements Layer {
 	@Override
 	public void loadPlate(Vector3i pos) {
 		Vector3i platePos = new Vector3i(pos);
+		PlateLoadEvent event = new PlateLoadEvent(world, platePos);
+		event.call();
+		if(event.isCancelled())
+			return;
 		if (!this.loadingPlates.contains(platePos) && !this.isPlateLoaded(platePos)) {
 			this.world.logger().info("Loaded plate at " + pos.x + ", " + pos.y + ", " + pos.z + " in layer " + this.layer);
 			this.loadingPlates.add(platePos);

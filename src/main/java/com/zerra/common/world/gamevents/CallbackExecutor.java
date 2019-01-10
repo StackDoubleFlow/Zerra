@@ -4,14 +4,14 @@ import java.util.function.Consumer;
 
 class CallbackExecutor extends EventExecutor {
 
-	private final Consumer<Event> callback;
+	private final Consumer<EventBase> callback;
 	
-	public CallbackExecutor(Consumer<Event> callback) {
+	public CallbackExecutor(Consumer<EventBase> callback) {
 		this.callback = callback;
 	}
 	
 	@Override
-	public void execute(Event event) {
+	public void execute(EventBase event) {
 		this.callback.accept(event);
 	}
 	

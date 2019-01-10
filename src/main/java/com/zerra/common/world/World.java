@@ -11,6 +11,8 @@ import org.apache.logging.log4j.Logger;
 import org.joml.Vector3i;
 
 import com.zerra.common.world.storage.IOManager.WorldStorageManager;
+import com.zerra.client.Zerra;
+import com.zerra.common.world.gamevents.listeners.PlateLoadEventListener;
 import com.zerra.common.world.storage.Layer;
 import com.zerra.common.world.storage.plate.Plate;
 import com.zerra.common.world.storage.plate.WorldLayer;
@@ -35,6 +37,7 @@ public class World {
 		}
 		this.storageManager = new WorldStorageManager(this);
 		this.pool = Executors.newCachedThreadPool();
+		Zerra.getInstance().getEventHandler().registerEventListener(new PlateLoadEventListener());
 	}
 
 	public void schedule(Runnable command) {
