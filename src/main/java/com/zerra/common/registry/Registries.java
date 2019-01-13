@@ -7,7 +7,7 @@ import java.util.List;
 import com.zerra.common.world.item.Item;
 import com.zerra.common.world.tile.Tile;
 
-public class Regsitries {
+public class Registries {
 
 	public static final IRegistry<Tile> TILES = new Tiles();
 

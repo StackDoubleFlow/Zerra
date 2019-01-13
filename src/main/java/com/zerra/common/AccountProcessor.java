@@ -22,7 +22,7 @@ public class AccountProcessor {
 	public AccountProcessor(String id) {
 		this.id = id;
 
-		JsonWrapper data = new JsonWrapper("data.json");
+		JsonWrapper data = new JsonWrapper("data.json", true);
 		PlayFabSettings.TitleId = data.getString("databaseID");
 
 		data.close();

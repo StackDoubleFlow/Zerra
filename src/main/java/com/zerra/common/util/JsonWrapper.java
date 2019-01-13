@@ -1,204 +1,356 @@
 package com.zerra.common.util;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.Reader;
 import java.nio.charset.Charset;
 
 import org.apache.commons.io.FileUtils;
 
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import com.google.gson.stream.JsonReader;
 
-public class JsonWrapper {
+public class JsonWrapper
+{
 
-	private static final Gson gson = new Gson();
-
+	private static final Gson gson = new GsonBuilder().setPrettyPrinting().create();
+	// means that file is null
+	boolean isReadOnly = false;
+	boolean isFileBased = true;
 	private File file;
-	private JsonObject json;
-	private FileReader reader;
+	private JsonObject mainJson;
+	private Reader reader;
 
-	public JsonWrapper(File file) {
-		try {
+	public JsonWrapper(FileInputStream fileInputStream)
+	{
+		reader = new InputStreamReader(fileInputStream);
+		JsonReader jsonReader = gson.newJsonReader(reader);
+		mainJson = gson.fromJson(jsonReader, JsonObject.class);
+		isReadOnly = true;
+		isFileBased = false;
+	}
+
+	public JsonWrapper(File file)
+	{
+		try
+		{
 			FileUtils.touch(file);
 			this.file = file;
 			FileUtils.touch(this.file);
 			this.reader = new FileReader(this.file);
-			this.json = gson.fromJson(reader, JsonObject.class);
-		} catch (Exception e) {
+			this.mainJson = gson.fromJson(reader, JsonObject.class);
+		} catch (Exception e)
+		{
 			e.printStackTrace();
 			System.out.println(file.getPath());
 		}
 	}
 
-	public JsonWrapper(String fileName) {
-		try {
-			this.file = new File(fileName);
-			FileUtils.touch(file);
-			this.reader = new FileReader(file);
-			this.json = gson.fromJson(reader, JsonObject.class);
-		} catch (Exception e) {
-			e.printStackTrace();
+	public JsonWrapper(String string, boolean isFileBased)
+	{
+		if (isFileBased)
+		{
+			try
+			{
+				this.file = new File(string);
+				FileUtils.touch(file);
+				this.reader = new FileReader(file);
+				this.mainJson = gson.fromJson(reader, JsonObject.class);
+			} catch (Exception e)
+			{
+				e.printStackTrace();
+			}
+		} else
+		{
+			this.mainJson = gson.fromJson(string, JsonObject.class);
+			this.isFileBased = false;
 		}
 	}
 
-	@SuppressWarnings("unused")
-	public void putForObject(String obj, String element, Object value) {
-		// TODO: Make it work automatically with nested objects.
-		String[] nests = obj.split("/");
+	public String fetch()
+	{
+		return fetch(true);
+	}
 
-		JsonObject workingJsonObj = null;
+	public String fetch(boolean format)
+	{
+		GsonBuilder builder = new GsonBuilder();
 
-		if (value instanceof Boolean) {
-			this.getJsonObject(obj).addProperty(element, (boolean) value);
-		} else if (value instanceof Character) {
-			this.getJsonObject(obj).addProperty(element, (char) value);
-		} else if (value instanceof String) {
-			this.getJsonObject(obj).addProperty(element, (String) value);
-		} else if (value instanceof Number) {
-			this.getJsonObject(obj).addProperty(element, (Number) value);
+		if (format)
+		{
+			return builder.setPrettyPrinting().create().toJson(this.mainJson);
+		}
+
+		return builder.create().toJson(this.mainJson);
+	}
+
+	public JsonObject getObjectFromPath(String path)
+	{
+		String[] objs = path.split("/");
+
+		JsonObject obj = this.mainJson;
+
+		for (int i = 0; i < objs.length; i++)
+		{
+			obj = obj.getAsJsonObject(objs[i]);
+		}
+
+		return obj;
+	}
+
+	public void putForObject(String path, String element, Object value)
+	{
+		if (isReadOnly || !this.getJson().has(element))
+			return;
+
+		JsonObject obj = this.getObjectFromPath(path);
+
+		if (value instanceof Boolean)
+		{
+			obj.addProperty(element, (boolean) value);
+		} else if (value instanceof Character)
+		{
+			obj.addProperty(element, (char) value);
+		} else if (value instanceof String)
+		{
+			obj.addProperty(element, (String) value);
+		} else if (value instanceof Number)
+		{
+			obj.addProperty(element, (Number) value);
 		}
 
 		this.write();
 	}
 
-	public JsonObject getJson() {
-		return this.json;
+	public JsonObject getJson()
+	{
+		return this.mainJson;
 	}
 
-	public File getFile() {
+	public File getFile()
+	{
+		if (isReadOnly)
+			return new File("");
 		return this.file;
 	}
 
 	/**
 	 * A method that automatically determines what data type to add.
-	 * 
+	 *
 	 * @param element
 	 * @param obj
 	 */
-	public void put(String element, Object obj) {
-		if (obj instanceof Boolean) {
-			json.addProperty(element, (boolean) obj);
-		} else if (obj instanceof Character) {
-			json.addProperty(element, (char) obj);
-		} else if (obj instanceof String) {
-			json.addProperty(element, (String) obj);
-		} else if (obj instanceof Number) {
-			json.addProperty(element, (Number) obj);
+	public void put(String element, Object obj)
+	{
+		if (isReadOnly || !this.getJson().has(element))
+			return;
+
+		if (obj instanceof Boolean)
+		{
+			mainJson.addProperty(element, (boolean) obj);
+		} else if (obj instanceof Character)
+		{
+			mainJson.addProperty(element, (char) obj);
+		} else if (obj instanceof String)
+		{
+			mainJson.addProperty(element, (String) obj);
+		} else if (obj instanceof Number)
+		{
+			mainJson.addProperty(element, (Number) obj);
 		}
 
 		this.write();
 	}
 
-	public void addString(String element, String value) {
-		json.addProperty(element, this.getString(element) + value);
+	public void addString(String element, String value)
+	{
+		if (isReadOnly | !this.getJson().has(element))
+			return;
+		mainJson.addProperty(element, this.getString(element) + value);
 		this.write();
 	}
 
-	public void addInt(String element, int value) {
-		json.addProperty(element, this.getInt(element) + value);
+	public void addInt(String element, int value)
+	{
+		if (isReadOnly || !this.getJson().has(element))
+			return;
+		mainJson.addProperty(element, this.getInt(element) + value);
 		this.write();
 	}
 
-	public void addFloat(String element, float value) {
-		json.addProperty(element, this.getFloat(element) + value);
+	public void addFloat(String element, float value)
+	{
+		if (isReadOnly || !this.getJson().has(element))
+			return;
+		mainJson.addProperty(element, this.getFloat(element) + value);
 		this.write();
 	}
 
-	public void addDouble(String element, double value) {
-		json.addProperty(element, this.getDouble(element) + value);
+	public void addDouble(String element, double value)
+	{
+		if (isReadOnly || !this.getJson().has(element))
+			return;
+		mainJson.addProperty(element, this.getDouble(element) + value);
 		this.write();
 	}
 
-	public void mult(String element, Object obj) {
-		if (obj instanceof Integer) {
-			json.addProperty(element, this.getInt(element) * (int) obj);
-		} else if (obj instanceof Float) {
-			json.addProperty(element, this.getFloat(element) * (float) obj);
-		} else if (obj instanceof Double) {
-			json.addProperty(element, this.getDouble(element) * (double) obj);
+	public void mult(String element, Object obj)
+	{
+		if (isReadOnly || !this.getJson().has(element))
+			return;
+		if (obj instanceof Integer)
+		{
+			mainJson.addProperty(element, this.getInt(element) * (int) obj);
+		} else if (obj instanceof Float)
+		{
+			mainJson.addProperty(element, this.getFloat(element) * (float) obj);
+		} else if (obj instanceof Double)
+		{
+			mainJson.addProperty(element, this.getDouble(element) * (double) obj);
 		}
 
 		this.write();
 	}
 
-	public void div(String element, Object obj) {
-		if (obj instanceof Integer) {
-			json.addProperty(element, this.getInt(element) / (int) obj);
-		} else if (obj instanceof Float) {
-			json.addProperty(element, this.getFloat(element) / (float) obj);
-		} else if (obj instanceof Double) {
-			json.addProperty(element, this.getDouble(element) / (double) obj);
+	public void div(String element, Object obj)
+	{
+		if (isReadOnly || !this.getJson().has(element))
+			return;
+		if (obj instanceof Integer)
+		{
+			mainJson.addProperty(element, this.getInt(element) / (int) obj);
+		} else if (obj instanceof Float)
+		{
+			mainJson.addProperty(element, this.getFloat(element) / (float) obj);
+		} else if (obj instanceof Double)
+		{
+			mainJson.addProperty(element, this.getDouble(element) / (double) obj);
 		}
 
 		this.write();
 	}
 
-	public void remove(String element) {
-		this.json.remove(element);
+	public void remove(String element)
+	{
+		if (isReadOnly || !this.getJson().has(element))
+			return;
+		this.mainJson.remove(element);
 		this.write();
 	}
 
-	public void write() {
-		try {
-			FileUtils.writeStringToFile(this.file, gson.toJson(json), Charset.defaultCharset());
-		} catch (Exception e) {
+	public void write()
+	{
+		if (isReadOnly || !isFileBased)
+			return;
+		try
+		{
+			FileUtils.writeStringToFile(this.file, gson.toJson(mainJson), Charset.defaultCharset());
+		} catch (Exception e)
+		{
 			e.printStackTrace();
 		}
 	}
 
-	public void close() {
-		try {
+	public void close()
+	{
+		if (isReadOnly || !isFileBased)
+			return;
+
+		try
+		{
 			this.write();
 			this.reader.close();
-		} catch (Exception e) {
+		} catch (Exception e)
+		{
 			e.printStackTrace();
 		}
 	}
 
-	public void closeAndDelete() {
-		try {
-			this.write();
-			this.reader.close();
+	public void closeAndDelete()
+	{
+		if (isReadOnly || !isFileBased)
+			return;
+
+		try
+		{
+			this.close();
 			FileUtils.forceDelete(this.file);
-		} catch (Exception e) {
+		} catch (Exception e)
+		{
 			e.printStackTrace();
 		}
 	}
 
-	public boolean getBoolean(String element) {
-		return this.json.get(element).getAsBoolean();
+	@Override
+	protected void finalize() throws Throwable
+	{
+		super.finalize();
+
+		try
+		{
+			if (this.reader.ready())
+				this.reader.close();
+		} catch (IOException e)
+		{
+			// Do nothing. The reader is closed, based on the io exception. There's nothing
+			// more for us to do here.
+		}
 	}
 
-	public String getString(String element) {
-		return this.json.get(element).getAsString();
+	public boolean getBoolean(String element)
+	{
+		return this.mainJson.get(element).getAsBoolean();
 	}
 
-	public Number getNumber(String element) {
-		return this.json.get(element).getAsNumber();
+	public String getString(String element)
+	{
+		return this.mainJson.get(element).getAsString();
 	}
 
-	public int getInt(String element) {
-		return this.json.get(element).getAsInt();
+	public Number getNumber(String element)
+	{
+		return this.mainJson.get(element).getAsNumber();
 	}
 
-	public double getDouble(String element) {
-		return this.json.get(element).getAsDouble();
+	public int getInt(String element)
+	{
+		return this.mainJson.get(element).getAsInt();
 	}
 
-	public float getFloat(String element) {
-		return this.json.get(element).getAsFloat();
+	public double getDouble(String element)
+	{
+		return this.mainJson.get(element).getAsDouble();
 	}
 
-	public char getChar(String element) {
-		return this.json.get(element).getAsCharacter();
+	public float getFloat(String element)
+	{
+		return this.mainJson.get(element).getAsFloat();
 	}
 
-	public JsonObject getJsonObject(String element) {
-		return this.json.get(element).getAsJsonObject();
+	public char getChar(String element)
+	{
+		return this.mainJson.get(element).getAsCharacter();
 	}
 
-	public JsonArray getJsonArray(String element) {
-		return this.json.get(element).getAsJsonArray();
+	public JsonObject getJsonObject(String element)
+	{
+		return this.mainJson.get(element).getAsJsonObject();
+	}
+
+	public JsonArray getJsonArray(String element)
+	{
+		return this.mainJson.get(element).getAsJsonArray();
+	}
+
+	public Object[] get(String key)
+	{
+		// TODO: implement
+		return null;
 	}
 }

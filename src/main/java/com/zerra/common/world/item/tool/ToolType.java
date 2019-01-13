@@ -1,4 +1,4 @@
-package com.zerra.common.world.item;
+package com.zerra.common.world.item.tool;
 
 public class ToolType
 {

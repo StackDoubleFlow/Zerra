@@ -1,31 +1,21 @@
 package com.zerra.common.world.storage;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.tuple.ImmutablePair;
-import org.apache.commons.lang3.tuple.Pair;
-import org.joml.Vector2i;
-import org.joml.Vector3i;
-
 import com.zerra.client.util.ResourceLocation;
 import com.zerra.common.world.World;
+import com.zerra.common.world.entity.Entity;
 import com.zerra.common.world.storage.plate.Plate;
 import com.zerra.common.world.tile.Tile;
 import com.zerra.common.world.tile.Tiles;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
+import org.joml.Vector2i;
+import org.joml.Vector3ic;
+
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import java.io.*;
+import java.util.*;
 
 public class IOManager {
 
@@ -56,17 +46,34 @@ public class IOManager {
 
 	public static class WorldStorageManager {
 
-		public static final short VERSION = 0;
+		private static final int VERSION = 1;
 
 		private final World world;
+		private final File worldDir;
 
 		private List<Pair<Integer, ResourceLocation>> tileIndexes;
 		private Map<ResourceLocation, Integer> tileMapper;
 
 		public WorldStorageManager(World world) {
 			this.world = world;
+			this.worldDir = new File(IOManager.saves, world.getName());
 			this.tileIndexes = new ArrayList<Pair<Integer, ResourceLocation>>();
 			this.tileMapper = new HashMap<ResourceLocation, Integer>();
+
+			this.worldDir.mkdirs();
+
+			//Check save version
+			int version = readVersion();
+			if(version < VERSION) {
+				String[] contents = this.worldDir.list();
+				if(contents == null || contents.length <= 0) {
+					writeVersion();
+				} else {
+					//TODO: Convert the world to the new version?
+					//But for now we'll ignore until we have converters or another solution in place
+					this.world.logger().warn("This world save is an old version! Save version: {}, Game version: {}", version, VERSION);
+				}
+			}
 
 			try {
 				this.readTileIndexes();
@@ -77,7 +84,30 @@ public class IOManager {
 			this.populateTileIndexes();
 		}
 
-		@Nullable
+		private void writeVersion() {
+			File file = this.getVersionFile();
+			try {
+				//noinspection ResultOfMethodCallIgnored
+				file.createNewFile();
+			} catch (IOException e) {
+				this.world.logger().error("Couldn't create new version file", e);
+				return;
+			}
+			try(DataOutputStream is = new DataOutputStream(new FileOutputStream(file))) {
+				is.writeInt(VERSION);
+			} catch (IOException e) {
+				this.world.logger().warn("Error writing to version file!", e);
+			}
+		}
+
+		private int readVersion() {
+			File file = this.getVersionFile();
+			try(DataInputStream is = new DataInputStream(new FileInputStream(file))) {
+				return is.readInt();
+			} catch (IOException ignored) {}
+			return -1;
+		}
+
 		public void writePlateSafe(int layer, Plate plate) {
 			try {
 				this.writePlate(layer, plate);
@@ -87,9 +117,26 @@ public class IOManager {
 		}
 
 		@Nullable
-		public Plate readPlateSafe(int layer, Vector3i pos) {
+        public Plate readPlateSafe(int layer, Vector3ic pos) {
 			try {
 				return this.readPlate(layer, pos);
+			} catch (IOException e) {
+				e.printStackTrace();
+				return null;
+			}
+		}
+
+        public void writeEntitiesSafe(int layer, Vector3ic platePos, Set<Entity> entities) {
+			try {
+				this.writeEntities(layer, platePos, entities);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+
+        public Set<Entity> readEntitiesSafe(int layer, Vector3ic platePos) {
+			try {
+				return this.readEntities(layer, platePos);
 			} catch (IOException e) {
 				e.printStackTrace();
 				return null;
@@ -99,42 +146,40 @@ public class IOManager {
 		private List<Pair<Integer, ResourceLocation>> loadTiles(File tiles) throws IOException {
 			if (tiles.exists()) {
 				List<Pair<Integer, ResourceLocation>> pairs = new ArrayList<Pair<Integer, ResourceLocation>>();
-				DataInputStream is = new DataInputStream(new FileInputStream(tiles));
-				while (is.available() > 0) {
-					pairs.add(new ImmutablePair<Integer, ResourceLocation>((int) is.readShort(), new ResourceLocation(is.readUTF())));
+				try(DataInputStream is = new DataInputStream(new FileInputStream(tiles))) {
+					while (is.available() > 0) {
+						pairs.add(new ImmutablePair<Integer, ResourceLocation>((int) is.readShort(), new ResourceLocation(is.readUTF())));
+					}
+					return pairs;
 				}
-				is.close();
-				return pairs;
 			} else {
 				return new ArrayList<Pair<Integer, ResourceLocation>>();
 			}
 		}
 
 		private void readTileIndexes() throws IOException {
-			/** Read tile index from file */
+			// Read tile index from file
 			File tileLookupFile = new File(IOManager.saves, this.world.getName() + "/tiles.dat");
 			this.tileIndexes.addAll(this.loadTiles(tileLookupFile));
 			FileUtils.touch(tileLookupFile);
 		}
 
 		private void writeTileIndexes() throws IOException {
-			/** Write tile lookup */
+			// Write tile lookup
 			File tileLookupFile = new File(IOManager.saves, this.world.getName() + "/tiles.dat");
 			FileUtils.touch(tileLookupFile);
 
-			{
-				DataOutputStream os = new DataOutputStream(new FileOutputStream(tileLookupFile));
-				/** Write all tiles to the lookup file */
+			try(DataOutputStream os = new DataOutputStream(new FileOutputStream(tileLookupFile))) {
+				// Write all tiles to the lookup file
 				for (Pair<Integer, ResourceLocation> pair : this.tileIndexes) {
 					os.writeShort(pair.getLeft());
 					os.writeUTF(pair.getRight().toString());
 				}
-				os.close();
 			}
 		}
 
 		private void populateTileIndexes() {
-			/** Add missing tiles to map */
+			// Add missing tiles to map
 			for (Tile tile : Tiles.getTiles()) {
 				int id = -1;
 				for (int i = 0; i < this.tileIndexes.size(); i++) {
@@ -159,33 +204,30 @@ public class IOManager {
 		}
 
 		public void writePlate(int layer, Plate plate) throws IOException {
-			Vector3i pos = plate.getPlatePos();
-
-			/** Create plate file */
-			File plateFile = this.getPlateFile(layer, pos);
+			// Create plate file
+			File plateFile = this.getPlateFile(layer, plate.getPlatePos());
 			FileUtils.touch(plateFile);
 
-			{
-				DataOutputStream os = new DataOutputStream(new FileOutputStream(plateFile));
-				/** Write version */
-				os.writeShort(VERSION);
-				/** Write plate tiles */
+			try(DataOutputStream os = new DataOutputStream(new FileOutputStream(plateFile))) {
+				// Write plate tiles
 				for (int x = 0; x < Plate.SIZE; x++) {
 					for (int z = 0; z < Plate.SIZE; z++) {
 						Vector2i position = new Vector2i(x, z);
 						os.writeShort(this.tileIndexes.get(this.tileMapper.get(plate.getTileAt(position).getRegistryID())).getLeft());
 					}
 				}
-				os.close();
 			}
 		}
 
 		@Nullable
-		public Plate readPlate(int layer, Vector3i pos) throws IOException {
-			/** Create plate file */
-			File plateFile = this.getPlateFile(layer, pos);
-			if (plateFile.exists()) {
-				DataInputStream is = new DataInputStream(new FileInputStream(plateFile));
+        public Plate readPlate(int layer, Vector3ic platePos) throws IOException {
+			// Create plate file
+			File plateFile = this.getPlateFile(layer, platePos);
+			if (!plateFile.exists()) {
+				return null;
+			}
+			try(DataInputStream is = new DataInputStream(new FileInputStream(plateFile))) {
+				// Read plate tiles
 				Plate plate = new Plate(this.world.getLayer(layer));
 				for (int x = 0; x < Plate.SIZE; x++) {
 					for (int z = 0; z < Plate.SIZE; z++) {
@@ -193,34 +235,65 @@ public class IOManager {
 						plate.setTileAt(tilePos, Tiles.byId(this.tileIndexes.get(is.readShort()).getRight()));
 					}
 				}
-				plate.setPlatePos(pos);
-				is.close();
+				plate.setPlatePos(platePos);
 				return plate;
-			} else {
-				return null;
 			}
 		}
 
-		public void backupPlate(int layer, Vector3i pos) {
+        public void writeEntities(int layer, Vector3ic platePos, Set<Entity> entities) throws IOException {
+            File file = getEntityFile(layer, platePos);
+		    if (entities.isEmpty()) {
+		        if (file.exists()) {
+		            file.delete();
+                }
+		        return;
+            }
+			FileUtils.touch(file);
+			//TODO: Write entities to file
+		}
+
+        public Set<Entity> readEntities(int layer, Vector3ic platePos) throws IOException {
+			File file = getEntityFile(layer, platePos);
+			if (!file.exists()) {
+			    return Collections.emptySet();
+            }
+			//TODO: Read entities from file
+
+			return new HashSet<>();
+		}
+
+        public void backupPlate(int layer, Vector3ic pos) {
 			try {
-				/** Look for the plate file to back up */
+				// Look for the plate file to back up
 				File plateFile = this.getPlateFile(layer, pos);
 				if (plateFile.exists()) {
-					File backupPlateFile = new File(IOManager.saves, this.world.getName() + "/plates-" + layer + "-bak/" + pos.x + "_" + pos.y + "_" + pos.z + ".zpl");
+                    File backupPlateFile = new File(IOManager.saves, this.world.getName() + "/plates-" + layer + "-bak/" + pos.x() + "_" + pos.y() + "_" + pos.z() + ".zpl");
 					FileUtils.touch(backupPlateFile);
-					IOUtils.copyLarge(new FileInputStream(plateFile), new FileOutputStream(backupPlateFile));
+					org.apache.commons.io.IOUtils.copyLarge(new FileInputStream(plateFile), new FileOutputStream(backupPlateFile));
 				}
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
 		}
 
-		public boolean isPlateGenerated(int layer, Vector3i pos) {
+        public boolean isPlateGenerated(int layer, Vector3ic pos) {
 			return this.getPlateFile(layer, pos).exists();
 		}
-		
-		private File getPlateFile(int layer, Vector3i pos) {
-			return new File(IOManager.saves, this.world.getName() + "/plates-" + layer + "/" + pos.x + "_" + pos.y + "_" + pos.z + ".zpl");
+
+		private File getLayerDir(int layer) {
+			return new File(this.worldDir, "plates-" + layer);
+		}
+
+        private File getPlateFile(int layer, Vector3ic pos) {
+			return new File(getLayerDir(layer), "plate_" + pos.x() + "_" + pos.y() + "_" + pos.z() + ".zpl");
+		}
+
+        private File getEntityFile(int layer, Vector3ic platePos) {
+			return new File(getLayerDir(layer), "entities_" + platePos.x() + "_" + platePos.y() + "_" + platePos.z() + ".zen");
+		}
+
+		private File getVersionFile() {
+			return new File(this.worldDir, "version.zsv");
 		}
 
 		public World getWorld() {

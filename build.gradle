@@ -18,6 +18,7 @@ version '0.0.3'
 
 repositories {
     mavenCentral()
+	jcenter()
     maven { url "https://oss.sonatype.org/content/repositories/snapshots/" }
 }
 
@@ -70,6 +71,13 @@ dependencies {
 	
 	// PLAYFAB
 	compile "com.playfab:combo-sdk:0.82.181218"
+	
+	// DISCORD RICH PRESENCE
+	compile "club.minnced:java-discord-rpc:2.0.2"
+	
+	// REFLECTIONS
+	compile group: 'org.reflections', name: 'reflections', version: '0.9.11'
+	
 }
 
 jar {

@@ -1,6 +1,6 @@
 package com.zerra.common.world.tile;
 
-import com.zerra.common.world.item.ZerraToolTypes;
+import com.zerra.common.world.item.tool.ZerraToolTypes;
 
 public class ZerraTileTypes {
 

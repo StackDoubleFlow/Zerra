@@ -5,7 +5,7 @@ package com.zerra.common.world.entity.attrib;
  * 
  * @author Arpaesis
  */
-public class LivingAttributes
+public class SharedLivingAttributes
 {
 
 	private Attribute HEALTH = Attribute.HEALTH;

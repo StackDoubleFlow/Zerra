@@ -11,6 +11,8 @@ import org.joml.Vector3i;
 import org.lwjgl.opengl.GL11;
 
 import com.zerra.Launch;
+import com.zerra.Presence;
+import com.zerra.api.mod.ModManager;
 import com.zerra.client.gfx.renderer.GuiRenderer;
 import com.zerra.client.gfx.renderer.tile.TileRenderer;
 import com.zerra.client.gfx.texture.TextureManager;
@@ -23,6 +25,7 @@ import com.zerra.client.util.ResourceLocation;
 import com.zerra.client.util.Timer;
 import com.zerra.client.view.Camera;
 import com.zerra.client.view.Display;
+import com.zerra.common.event.EventHandler;
 import com.zerra.common.world.World;
 import com.zerra.common.world.storage.Layer;
 import com.zerra.common.world.tile.Tile;
@@ -50,16 +53,29 @@ public class Zerra implements Runnable {
 	private Timer timer;
 	private TextureManager textureManager;
 	private TextureMap textureMap;
-	private TileRenderer tileRenderer;
-	private GuiRenderer guiRenderer;
-	private Camera camera;
-	private InputHandler inputHandler;
-	private World world;
-	private Fbo fbo;
+	protected TileRenderer tileRenderer;
+	protected GuiRenderer guiRenderer;
+	protected Camera camera;
+	protected InputHandler inputHandler;
+	protected World world;
+	protected Fbo fbo;
+	
+	private Presence presence;
+	
+	private EventHandler eventHandler;
+	
+	private ModManager modManager;
 
 	public Zerra() {
 		instance = this;
 		this.pool = Executors.newCachedThreadPool();
+		
+		//TODO: Move this eventually to the game load state, or wherever is deemed necessary.
+		modManager = new ModManager();
+		modManager.setupMods();
+
+		this.presence = new Presence();
+		
 		this.start();
 	}
 
@@ -121,21 +137,14 @@ public class Zerra implements Runnable {
 		}
 	}
 
-	private void update() {
-		this.camera.update();
-		this.inputHandler.updateGamepad();
+	private void update()
+	{
+		StateManager.getActiveState().update();
 	}
 
-	private void render(float partialTicks) {
-		this.fbo.bindFrameBuffer();
-		GL11.glClear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT);
-		this.tileRenderer.renderTiles(this.camera, this.world, 0);
-		this.fbo.unbindFrameBuffer();
-
-		GL11.glBindTexture(GL11.GL_TEXTURE_2D, this.fbo.getColorTexture(0));
-		this.guiRenderer.setProjectionMatrix(GuiRenderer.FBO_MATRIX);
-		this.guiRenderer.renderTextureQuad(0, 0, Display.getWidth(), Display.getHeight(), 0, 0, 1, 1, 1, 1);
-		this.guiRenderer.restoreProjectionMatrix();
+	private void render(float partialTicks)
+	{
+		StateManager.getActiveState().render();
 	}
 
 	private void init() throws Throwable {
@@ -159,7 +168,6 @@ public class Zerra implements Runnable {
 		this.camera = new Camera();
 		this.inputHandler = new InputHandler();
 		this.fbo = new Fbo(Display.getWidth(), Display.getHeight(), Fbo.DEPTH_RENDER_BUFFER, 2);
-
 		World world = Zerra.getInstance().getWorld();
 		Layer layer = world.getLayer(0);
 		for (int x = 0; x < 3; x++) {
@@ -167,6 +175,10 @@ public class Zerra implements Runnable {
 				layer.loadPlate(new Vector3i(x - 1, 0, z - 1));
 			}
 		}
+		this.eventHandler = new EventHandler();
+		
+		//TODO: Eventually set the first state of the game to the game loading state.
+		StateManager.setActiveState(new WorldState());
 	}
 
 	public void schedule(Runnable runnable) {
@@ -236,6 +248,10 @@ public class Zerra implements Runnable {
 	public World getWorld() {
 		return world;
 	}
+	
+	public EventHandler getEventHandler() {
+		return eventHandler;
+	}
 
 	public static Logger logger() {
 		return LOGGER;
@@ -243,5 +259,14 @@ public class Zerra implements Runnable {
 
 	public static Zerra getInstance() {
 		return instance;
+	}
+	
+	public boolean isRunning() {
+		return running;
+	}
+
+	public Presence getPresence()
+	{
+		return presence;
 	}
 }

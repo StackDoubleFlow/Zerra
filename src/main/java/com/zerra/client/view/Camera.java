@@ -8,6 +8,9 @@ import org.joml.Vector3i;
 import org.lwjgl.glfw.GLFW;
 
 import com.zerra.Launch;
+import com.zerra.client.MenuState;
+import com.zerra.client.StateManager;
+import com.zerra.client.WorldState;
 import com.zerra.client.Zerra;
 import com.zerra.client.input.InputHandler;
 import com.zerra.client.input.gamepad.Gamepad;
@@ -38,6 +41,10 @@ public class Camera implements ICamera {
 	private Vector3f rotation;
 	
 	private float speedAdjust = 0f;
+	
+	private boolean controllerIsOffset = false;
+	private double xOffset;
+	private double yOffset;
 
 	public Camera() {
 		this.lastPlatePosition = new Vector3i();
@@ -62,22 +69,55 @@ public class Camera implements ICamera {
 		if (inputHandler.isGamepadConnected(GLFW.GLFW_JOYSTICK_1)) {
 			Gamepad gamepad = inputHandler.getGamepad(GLFW.GLFW_JOYSTICK_1);
 			Joystick joystick = gamepad.getJoystick(0);
+			
 			if (joystick != null) {
-				this.position.y += joystick.getY();
-				this.position.x += joystick.getX();
+
+				if(!this.controllerIsOffset && joystick.getX() != 0 && joystick.getY() != 0 && Display.isCreated()) {
+					xOffset = joystick.getX();
+					yOffset = joystick.getY();
+					this.controllerIsOffset = true;
+				}
+				
+				if(joystick.getX() < 0) {
+					if(!(joystick.getX() > -xOffset - 0.01f)) {
+						this.position.x += joystick.getX();
+					}
+				}else {
+					if(!(joystick.getX() < xOffset + 0.01f)) {
+						this.position.x += joystick.getX();
+					}
+				}
+				
+				if(joystick.getY() < 0) {
+					if(!(joystick.getY() > -yOffset - 0.01f)) {
+						this.position.y += joystick.getY();
+					}
+				}else {
+					if(!(joystick.getY() < yOffset + 0.01f)) {
+						this.position.y += joystick.getY();
+					}
+				}
 			}
 		} else {
-			if (inputHandler.isKeyPressed(GLFW.GLFW_KEY_W)) {
+			if (inputHandler.isKeyPressed(GLFW.GLFW_KEY_W) || inputHandler.isKeyPressed(GLFW.GLFW_KEY_UP)) {
 				this.position.y -= 1 + this.speedAdjust;
 			}
-			if (inputHandler.isKeyPressed(GLFW.GLFW_KEY_S)) {
+			if (inputHandler.isKeyPressed(GLFW.GLFW_KEY_S) || inputHandler.isKeyPressed(GLFW.GLFW_KEY_DOWN)) {
 				this.position.y += 1 + this.speedAdjust;
 			}
-			if (inputHandler.isKeyPressed(GLFW.GLFW_KEY_A)) {
+			if (inputHandler.isKeyPressed(GLFW.GLFW_KEY_A) || inputHandler.isKeyPressed(GLFW.GLFW_KEY_LEFT)) {
 				this.position.x -= 1 + this.speedAdjust;
 			}
-			if (inputHandler.isKeyPressed(GLFW.GLFW_KEY_D)) {
+			if (inputHandler.isKeyPressed(GLFW.GLFW_KEY_D) || inputHandler.isKeyPressed(GLFW.GLFW_KEY_RIGHT)) {
 				this.position.x += 1 + this.speedAdjust;
+			}
+			if (inputHandler.isKeyPressed(GLFW.GLFW_KEY_ESCAPE))
+			{
+				if (StateManager.getActiveState() instanceof WorldState)
+				{
+					System.out.println("Switching to menu state...");
+					StateManager.setActiveState(new MenuState());
+				}
 			}
 			
 			// Useful keys to adjust the movement speed of the camera when not locked to the player.
